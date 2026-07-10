@@ -4,7 +4,7 @@
  */
 
 import YahooFinance from "yahoo-finance2";
-import type { Candle, Quote, SearchResult, SourceMeta } from "../types";
+import type { Candle, Fundamentals, Quote, SearchResult, SourceMeta } from "../types";
 
 const yf = new YahooFinance({ suppressNotices: ["yahooSurvey", "ripHistorical"] });
 
@@ -122,4 +122,27 @@ export async function yahooSearch(query: string): Promise<SearchResult[]> {
         type: str(r.typeDisp),
       };
     });
+}
+
+export async function yahooFundamentals(symbol: string): Promise<Fundamentals> {
+  const r = await yf.quoteSummary(symbol, {
+    modules: ["summaryDetail", "assetProfile", "defaultKeyStatistics"],
+  });
+  const sd = r.summaryDetail;
+  const ap = r.assetProfile;
+  const ks = r.defaultKeyStatistics;
+  return {
+    symbol,
+    peRatio: sd?.trailingPE ?? undefined,
+    forwardPE: sd?.forwardPE ?? ks?.forwardPE ?? undefined,
+    eps: ks?.trailingEps ?? undefined,
+    dividendYield: sd?.dividendYield ?? undefined,
+    beta: sd?.beta ?? undefined,
+    sector: ap?.sector ?? undefined,
+    industry: ap?.industry ?? undefined,
+    description: ap?.longBusinessSummary ?? undefined,
+    employees: ap?.fullTimeEmployees ?? undefined,
+    website: ap?.website ?? undefined,
+    meta: now(),
+  };
 }
