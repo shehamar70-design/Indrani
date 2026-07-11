@@ -1,0 +1,43 @@
+{
+  "common": {
+    "loading": "लोड हो रहा है…",
+    "delayed": "विलंबित — {time} तक",
+    "unavailable": "डेटा उपलब्ध नहीं",
+    "search": "खोजें",
+    "signIn": "साइन इन करें",
+    "signOut": "साइन आउट करें",
+    "register": "खाता बनाएँ",
+    "email": "ईमेल",
+    "password": "पासवर्ड",
+    "name": "नाम",
+    "submit": "सबमिट करें",
+    "cancel": "रद्द करें",
+    "retry": "पुनः प्रयास करें"
+  },
+  "nav": {
+    "home": "होम",
+    "markets": "बाज़ार",
+    "news": "समाचार",
+    "terminal": "टर्मिनल",
+    "watchlist": "वॉचलिस्ट"
+  },
+  "auth": {
+    "loginTitle": "Indrani में साइन इन करें",
+    "registerTitle": "अपना Indrani खाता बनाएँ",
+    "verifyTitle": "अपना ईमेल सत्यापित करें",
+    "verifyBanner": "कृपया अपना ईमेल पता सत्यापित करें।",
+    "verifySent": "सत्यापन लिंक भेजा गया। अपना इनबॉक्स देखें।",
+    "noAccount": "खाता नहीं है?",
+    "haveAccount": "पहले से खाता है?"
+  },
+  "markets": {
+    "price": "मूल्य",
+    "change": "बदलाव",
+    "volume": "वॉल्यूम",
+    "open": "खुला",
+    "high": "उच्च",
+    "low": "निम्न",
+    "close": "बंद",
+    "marketCap": "मार्केट कैप"
+  }
+}

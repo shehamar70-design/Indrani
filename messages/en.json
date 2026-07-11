@@ -1,0 +1,43 @@
+{
+  "common": {
+    "loading": "Loading…",
+    "delayed": "Delayed — as of {time}",
+    "unavailable": "Data unavailable",
+    "search": "Search",
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "register": "Create account",
+    "email": "Email",
+    "password": "Password",
+    "name": "Name",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "retry": "Retry"
+  },
+  "nav": {
+    "home": "Home",
+    "markets": "Markets",
+    "news": "News",
+    "terminal": "Terminal",
+    "watchlist": "Watchlist"
+  },
+  "auth": {
+    "loginTitle": "Sign in to Indrani",
+    "registerTitle": "Create your Indrani account",
+    "verifyTitle": "Verify your email",
+    "verifyBanner": "Please verify your email address.",
+    "verifySent": "Verification link sent. Check your inbox.",
+    "noAccount": "No account?",
+    "haveAccount": "Already have an account?"
+  },
+  "markets": {
+    "price": "Price",
+    "change": "Change",
+    "volume": "Volume",
+    "open": "Open",
+    "high": "High",
+    "low": "Low",
+    "close": "Close",
+    "marketCap": "Market cap"
+  }
+}
