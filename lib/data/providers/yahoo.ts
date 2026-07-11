@@ -146,3 +146,34 @@ export async function yahooFundamentals(symbol: string): Promise<Fundamentals> {
     meta: now(),
   };
 }
+
+const SCREENER_IDS = {
+  gainers: "day_gainers",
+  losers: "day_losers",
+  actives: "most_actives",
+} as const;
+
+export type MoverKind = keyof typeof SCREENER_IDS;
+
+export async function yahooMovers(kind: MoverKind, count = 25): Promise<Quote[]> {
+  const result = await yf.screener({ scrIds: SCREENER_IDS[kind], count });
+  const out: Quote[] = [];
+  for (const r of result.quotes) {
+    if (r.regularMarketPrice === undefined) continue;
+    out.push({
+      symbol: r.symbol,
+      shortName: r.shortName ?? r.longName ?? undefined,
+      price: r.regularMarketPrice,
+      change: r.regularMarketChange ?? 0,
+      changePercent: r.regularMarketChangePercent ?? 0,
+      currency: r.currency ?? undefined,
+      marketState: normalizeMarketState(r.marketState),
+      volume: r.regularMarketVolume ?? undefined,
+      marketCap: r.marketCap ?? undefined,
+      exchange: r.fullExchangeName ?? r.exchange ?? undefined,
+      quoteType: r.quoteType ?? undefined,
+      meta: now(),
+    });
+  }
+  return out;
+}

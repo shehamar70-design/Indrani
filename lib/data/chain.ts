@@ -24,7 +24,7 @@ import type {
   SearchResult,
   FxRates,
 } from "./types";
-import { yahooChart, yahooFundamentals, yahooQuotes, yahooSearch } from "./providers/yahoo";
+import { yahooChart, yahooFundamentals, yahooMovers, yahooQuotes, yahooSearch, type MoverKind } from "./providers/yahoo";
 import { finnhubQuotes } from "./providers/finnhub";
 import { binanceChart, binanceQuotes, isCryptoSymbol } from "./providers/binance";
 import { fredCalendar } from "./providers/fred";
@@ -202,5 +202,14 @@ export async function getCalendar(
     cache: macroCache as TtlCache<CalendarEvent[]>,
     ttlMs: TTL.calendar,
     sources: [{ name: "fred", fn: () => fredCalendar(from, to) }],
+  });
+}
+
+export async function getMovers(kind: MoverKind): Promise<ChainResult<Quote[]>> {
+  return safeFetch({
+    key: `movers:${kind}`,
+    cache: quoteCache as TtlCache<Quote[]>,
+    ttlMs: 60_000, // movers list churns slowly; 1-min TTL balances freshness vs Yahoo load
+    sources: [{ name: "yahoo", fn: () => yahooMovers(kind) }],
   });
 }
