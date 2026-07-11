@@ -30,9 +30,10 @@ export const auth = betterAuth({
   },
   emailVerification: {
     sendOnSignUp: true,
-    async sendVerificationEmail({ user: u, url }) {
+    async sendVerificationEmail({ user: u, token }) {
       // No SMTP configured (docs/13 §2): surface the link in server logs.
-      console.log(`[indrani auth] verification link for ${u.email}: ${url}`);
+      const base = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
+      console.log(`[indrani auth] verification link for ${u.email}: ${base}/verify?token=${token}`);
     },
   },
   rateLimit: {
