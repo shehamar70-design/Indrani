@@ -29,7 +29,20 @@ export const FEEDS: FeedConfig[] = [
   { url: "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms", source: "ET Markets", category: "markets" },
   { url: "https://feeds.bbci.co.uk/hindi/rss.xml", source: "BBC Hindi", category: "india", lang: "hi" },
   { url: "https://www.rbi.org.in/pressreleases_rss.xml", source: "RBI", category: "economy" },
+  // Phase 2 vertical feeds (docs/04 §1) — all free/public RSS
+  { url: "https://www.cnbc.com/id/19854910/device/rss/rss.html", source: "CNBC", category: "technology" },
+  { url: "https://www.cnbc.com/id/10000113/device/rss/rss.html", source: "CNBC", category: "politics" },
+  { url: "https://www.cnbc.com/id/10001054/device/rss/rss.html", source: "CNBC", category: "wealth" },
+  { url: "https://www.cnbc.com/id/100370673/device/rss/rss.html", source: "CNBC", category: "opinion" },
+  { url: "https://techcrunch.com/category/artificial-intelligence/feed/", source: "TechCrunch", category: "ai" },
+  { url: "https://www.theguardian.com/environment/rss", source: "The Guardian", category: "green" },
 ];
+
+/** Every category present in FEEDS + the ticker pseudo-category — single source for route validation. */
+export const NEWS_CATEGORIES = [
+  ...new Set(FEEDS.map((f) => f.category)),
+  "ticker",
+] as string[];
 
 /** Yahoo per-ticker headlines feed (docs/12 §1). */
 export function yahooTickerFeed(symbol: string): FeedConfig {

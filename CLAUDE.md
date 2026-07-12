@@ -46,7 +46,7 @@ Every UI component that renders market data must handle: `loading`, `live`, `sta
 ## Security rules (summary of docs/18 §1 — read full doc before touching auth/API)
 
 - All API keys in env vars; never hardcoded, never shipped to the client. External API calls happen only in Route Handlers / Server Actions. `.env.local` gitignored; keep `.env.example` current.
-- Every API route validates input with Zod. Tickers must match `^[A-Z0-9.^=\-]{1,12}$`. Search queries: max 100 chars, HTML stripped. Parameterized queries only (Drizzle).
+- Every API route validates input with Zod. Tickers must match `^[A-Z0-9.^=\-]{1,15}$`. Search queries: max 100 chars, HTML stripped. Parameterized queries only (Drizzle).
 - Better Auth built-in scrypt hashing; session cookies httpOnly/secure/sameSite=lax. Every user-data query filters by session `userId` (Neon has no RLS). Rate-limit auth: 5 attempts / 15 min per IP.
 - Security headers in next config: `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`. No unsanitized `dangerouslySetInnerHTML` (sanitize RSS HTML). External links get `rel="noopener noreferrer"`.
 

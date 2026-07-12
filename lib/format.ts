@@ -75,3 +75,16 @@ export function formatCompact(
     maximumFractionDigits: 2,
   }).format(value);
 }
+
+/** Relative time for news timestamps: "3m ago", "2h ago", "Jul 8". */
+export function timeAgo(iso: string | null | undefined, now = Date.now()): string {
+  if (!iso) return DASH;
+  const t = Date.parse(iso);
+  if (Number.isNaN(t)) return DASH;
+  const s = Math.max(0, Math.floor((now - t) / 1000));
+  if (s < 60) return "now";
+  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+  if (s < 86400 * 7) return `${Math.floor(s / 86400)}d ago`;
+  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(t);
+}

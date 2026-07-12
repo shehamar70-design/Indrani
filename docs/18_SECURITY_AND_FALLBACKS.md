@@ -14,7 +14,7 @@
 
 ### 1.2 Input validation
 - Every API route validates input with Zod before touching data.
-- Ticker symbols: whitelist regex `^[A-Z0-9.^=\-]{1,12}$` — reject anything else.
+- Ticker symbols: whitelist regex `^[A-Z0-9.^=\-]{1,15}$` — reject anything else.
 - Search queries: max length 100, strip HTML.
 - Parameterized queries only (Drizzle handles this) — never string-concatenate SQL.
 

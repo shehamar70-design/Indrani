@@ -10,7 +10,7 @@ import type { ChainResult } from "@/lib/data/types";
 /** docs/18 §1 ticker rule. */
 export const tickerSchema = z
   .string()
-  .regex(/^[A-Z0-9.^=\-]{1,12}$/, "invalid symbol");
+  .regex(/^[A-Z0-9.^=\-]{1,15}$/, "invalid symbol");
 
 export const symbolsSchema = z
   .string()

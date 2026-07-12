@@ -1,10 +1,12 @@
 import { z } from "zod";
 import { getNews } from "@/lib/data/chain";
+import { NEWS_CATEGORIES } from "@/lib/data/providers/rss";
 import { badRequest, chainResponse, rateLimit, tickerSchema, tooMany } from "@/lib/api";
 
 const paramsSchema = z.object({
   category: z
-    .enum(["all", "top", "markets", "crypto", "india", "economy", "ticker"])
+    .string()
+    .refine((c) => c === "all" || NEWS_CATEGORIES.includes(c), "unknown category")
     .default("all"),
   symbol: tickerSchema.optional(),
   limit: z.coerce.number().int().min(1).max(100).default(50),
