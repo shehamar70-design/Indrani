@@ -94,3 +94,21 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Ticker tape marquee — docs/33. Two copies of the track scroll -50%. */
+.ticker-track {
+  animation: ticker-scroll 45s linear infinite;
+}
+.ticker-strip:hover .ticker-track,
+.ticker-strip:focus-within .ticker-track {
+  animation-play-state: paused;
+}
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* static, scrollable row; duplicate copy hidden */
+  .ticker-viewport { overflow-x: auto; }
+  .ticker-track[aria-hidden="true"] { display: none; }
+}

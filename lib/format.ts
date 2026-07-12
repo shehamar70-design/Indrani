@@ -47,6 +47,12 @@ export function formatPercent(value: number | null | undefined): string {
   return `${sign}${pct}%`;
 }
 
+/** Percent-point input (providers return 1.23 for +1.23%): 1.23 → "+1.23%". */
+export function formatPercentPoints(value: number | null | undefined): string {
+  if (invalid(value)) return DASH;
+  return formatPercent(value / 100);
+}
+
 /**
  * Compact large numbers. International: 1.23M / 4.56B.
  * indian=true: lakh/crore — 4.56 L / 1.23 Cr (docs/35: hi locale + Indian instruments only).
