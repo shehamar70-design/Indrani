@@ -5,7 +5,7 @@
  */
 
 import Link from "next/link";
-import Image from "next/image";
+import RemoteImage from "@/components/news/remote-image";
 import { timeAgo } from "@/lib/format";
 
 export interface StoryCardProps {
@@ -80,14 +80,7 @@ export default function StoryCard({
               : "relative aspect-[3/2] w-28 shrink-0 overflow-hidden rounded bg-muted sm:w-36"
           }
         >
-          <Image
-            src={imageUrl}
-            alt=""
-            fill
-            sizes={lead ? "(max-width: 768px) 100vw, 720px" : "144px"}
-            className="object-cover"
-            priority={lead}
-          />
+          <RemoteImage src={imageUrl} priority={lead} />
         </div>
       )}
       <div className="min-w-0">
