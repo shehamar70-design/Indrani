@@ -56,7 +56,9 @@ export async function yahooQuotes(
 }
 
 const RANGE_MS: Record<string, number> = {
-  "1d": 1 * 864e5,
+  // 1d looks back 5 calendar days so weekends/holidays still reach the last
+  // trading session; yahooChart then trims to that session's candles.
+  "1d": 5 * 864e5,
   "5d": 5 * 864e5,
   "1mo": 31 * 864e5,
   "3mo": 92 * 864e5,
@@ -100,6 +102,13 @@ export async function yahooChart(
       close: q.close,
       volume: q.volume ?? undefined,
     });
+  }
+  if (range === "1d" && candles.length > 0) {
+    // Keep only the last trading session (same UTC day as the final candle).
+    const lastDay = new Date(candles[candles.length - 1].time * 1000).toISOString().slice(0, 10);
+    return candles.filter(
+      (c) => new Date(c.time * 1000).toISOString().slice(0, 10) === lastDay,
+    );
   }
   return candles;
 }
