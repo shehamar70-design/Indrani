@@ -6,18 +6,22 @@
  * Session-scoped dismiss keyed by item id so a NEW breaking story reappears.
  */
 
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import type { NewsItem } from "@/lib/data/types";
 
+const noopSubscribe = () => () => {}; // same-tab dismissal re-renders via setDismissed
+
 export default function BreakingBanner({ item }: { item: NewsItem | null }) {
-  const [dismissed, setDismissed] = useState(true); // avoid flash before sessionStorage read
+  const [dismissed, setDismissed] = useState(false); // this session's click only
+  // sessionStorage read without an effect (react-hooks/set-state-in-effect);
+  // server snapshot pretends dismissed so there's no flash before hydration.
+  const storedId = useSyncExternalStore(
+    noopSubscribe,
+    () => sessionStorage.getItem("breaking-dismissed"),
+    () => item?.id ?? null,
+  );
 
-  useEffect(() => {
-    if (!item) return;
-    setDismissed(sessionStorage.getItem("breaking-dismissed") === item.id);
-  }, [item]);
-
-  if (!item || dismissed) return null;
+  if (!item || dismissed || storedId === item.id) return null;
 
   return (
     <div
