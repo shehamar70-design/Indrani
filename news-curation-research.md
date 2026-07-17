@@ -1,0 +1,54 @@
+# Research: Homepage Curation (A) + Algorithmic News Ranking (B)
+All claims sourced. Items marked UNVERIFIED could not be confirmed with a free source.
+
+## A) How Bloomberg / peers curate homepages
+
+- Bloomberg employs dedicated digital editors whose stated duties are: "Curate homepages, write sharp headlines, craft social and SEO language, send speedy mobile push alerts and post content across social platforms"; also develop breaking-news coverage plans with the News Desk, optimize SEO, pitch Apple News/LinkedIn. Requires 5+ yrs business journalism, "split-second decisions." — https://careers.bloomberg.com/job/detail/124256
+- Bloomberg also staffs dedicated Breaking News Editors (speed desk separate from features). — https://www.mediabistro.com/jobs/1391167787-breaking-news-editor-washington-job-at-bloomberg-in-washington
+- The Bloomberg Way (Winkler) separates speed vs enterprise as distinct tracks: "Five Fs" (First, Factual, Fastest, Final, Future) for breaking news; a dedicated Bloomberg First Word desk for market-moving headlines; a separate Enterprise chapter for long-form. Headlines written BEFORE the story ("Before reporters write a word of narrative — even the lead — they should write the headline," 63-char discipline). Fixed 4-paragraph lead structure (theme, quote, details, nut graf). — https://www.bloomberg.com/company/press/the-bloomberg-way-guide-for-reporters-and-editors-now-available-to-the-public/ ; https://knowledge.wharton.upenn.edu/article/the-bloomberg-way-an-inside-look-at-how-the-news-organization-covers-news/ ; https://www.amazon.com/Bloomberg-Way-Guide-Journalists/dp/1119272319
+- NYT homepage (best-documented modern model, Oct 2024, written by NYT staff): publishes 250+ stories/day, homepage fits 50–60; editors "manually selected and programmed which stories appear, when and where, multiple times daily." Now ~half the homepage is algorithmically assisted via a 3-step pipeline: (1) pool eligible stories, (2) rank, (3) "finish" with editorial guardrails + business rules. Editors assign importance ranks, can "pin" stories to override the algorithm, and exposure minimums guarantee stories get seen. Algorithms are "editorially driven." — https://www.niemanlab.org/2024/10/how-the-new-york-times-incorporates-editorial-judgment-in-algorithms-to-curate-its-home-page/
+- NYT homepage "updates and shuffles stories frequently"; strong hierarchy (variable lead-headline sizing by story magnitude) vs local outlets' fixed plug-and-play templates. Editorial staff insisted curation "remain solely the domain of the homepage editor" vs personalization. — https://localnewsinitiative.northwestern.edu/posts/2024/08/29/do-news-homepages-still-matter/
+- Homepage story selection balances importance vs audience interest; page-view metrics increasingly inform prominence. — https://newsliteracymatters.com/2020/02/24/q-should-a-newspapers-front-page-or-homepage-reflect-what-people-should-read-or-what-they-want-to-read/
+- Wire "write-through" practice (how one developing story evolves as a single item): a writethru is a complete replacement version of an existing story that "updates, clarifies, adds context and corrects" — subscribers swap the whole story, no silent in-place edits. — https://waywordradio.org/writethru_2/
+- Reuters escalation ladder: urgency classifications routine → "urgent" → "flash"; slugging/headline-tag rules in the Reuters Handbook of Journalism govern how successive versions are coded so downstream desks replace, not duplicate. — https://mediakar.wordpress.com/wp-content/uploads/2012/10/handbook-of-journalism-reuters.pdf ; wire-feed mechanics: https://nationalnewsauthority.com/news-wire-services
+- UNVERIFIED: exact Reuters "UPDATE 1-/UPDATE 2-" numbered-headline convention with "(Adds quotes, background)" trailers — widely observed convention, no free primary doc found.
+- UNVERIFIED: exact off-lead/rail slot terminology or section-mix quotas for Bloomberg.com specifically — no public Bloomberg doc found; NYT/Northwestern sources are the closest documented analogs.
+
+## B) Algorithmic equivalents
+
+### Google News
+- Official ranking signals: relevance, prominence (heavy coverage across sources, high citation by other sources, "significant original reporting"), authoritativeness, freshness ("how recently published… in the context of the subject"), location, language. — https://www.google.com/intl/en_us/search/howsearchworks/how-news-works/
+- Cluster-lead selection (Google's Cohen): original content, timeliness, coverage of developments, relevancy to cluster, local relevancy (LA Times favored for SoCal wildfires). — https://searchengineland.com/google-news-ranking-stories-30424
+- Clustering patent US9361369B1: documents scored on document/source/cluster parameters; near-identical text compared across sources, earliest publication date = canonical/original, rest marked duplicates. — https://patents.google.com/patent/US9361369B1/en
+- Ranking patent US8667037: scores use source quality, article freshness, length, snippet presence, novelty. — https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/8667037
+- Topic Authority system: publisher expertise/originality boost for specialist topics incl. finance. — https://www.ignitingbusiness.com/blog/what-is-googles-news-topic-authority-and-does-it-affect-my-websites-seo
+
+### Techmeme
+- Hybrid: automated scraping/clustering + human editors (added 2008). Algorithm ranks by inbound links + age with anti-gaming dampening (links created too fast / by too few people count less). Editors promote/demote/annotate, kill false reports, elevate exclusives, manage the source list. — https://en.wikipedia.org/wiki/Techmeme
+- Clusters thousands of posts into story packages: most authoritative version on top, related coverage in a "discussion" section beneath. — https://www.findarticles.com/why-tech-pros-still-start-their-day-with-techmeme/
+- Rivera's headline criteria: "huge exclusive story, well conveyed"; "huge non-exclusive story, exceptionally conveyed"; or "interesting, yet not so (obviously) huge." Best analysis/context/headline beats being first. — https://techcrunch.com/2011/10/31/techmeme-opens-the-kimono-on-how-it-chooses-headlines-and-sources/
+
+### Near-duplicate detection for headlines
+- MinHash + shingling: Broder 1997 (AltaVista); shingle sets → Jaccard similarity; MinHash signatures approximate Jaccard; banded LSH (e.g., 112 hashes, 14 bands × 8 rows) yields candidate pairs, verify at ~0.8 similarity. — https://blog.nelhage.com/post/fuzzy-dedup/ ; https://mbrenndoerfer.com/writing/minhash-algorithm-jaccard-similarity-lsh-deduplication
+- SimHash: Charikar 2002 (STOC, doi:10.1145/509907.509965); Google's Manku/Jain/Das Sarma WWW 2007 paper — 64-bit fingerprints, Hamming distance ≤ 3 = duplicate, proven at 8B-page scale; online (per-item) operation suits streaming ingestion. — https://research.google.com/pubs/archive/33026.pdf ; https://dl.acm.org/doi/10.1145/1242572.1242592
+- Embedding cosine similarity: SBERT (all-MiniLM-L6-v2, 384-dim) is standard; published thresholds ~0.75 (claim overlap, FACTors) to 0.8 (passage clustering) / 0.9 (strict); threshold is model-dependent — validate on an annotated sample. — https://arxiv.org/pdf/2505.09414 ; https://arxiv.org/pdf/2408.17103 ; https://www.pinecone.io/learn/series/nlp/sentence-embeddings/ ; news story chains with SBERT: https://arxiv.org/pdf/2309.06192
+
+### Recency decay / authority formulas
+- Hacker News: score = (P−1)/(T+2)^G, T in hours, gravity G = 1.8 (from news.arc source); divisive decay. — https://medium.com/hacking-and-gonzo/how-hacker-news-ranking-algorithm-works-1d9b0cf2c08d
+- HN in production also applies penalty multipliers (~20% of front page penalized) and re-ranks incrementally (on upvote + 1 random top-50 story per 30s), not a constant full re-sort. — http://www.righto.com/2013/11/how-hacker-news-ranking-really-works.html
+- Reddit hot: log10(max(1,|ups−downs|)) + sign×(seconds−1134028003)/45000 → 10× votes ≙ posting 12.5h later; additive time bonus means score is computed once at vote time (cheap to precompute/index). — https://medium.com/hacking-and-gonzo/how-hacker-news-ranking-algorithm-works-1d9b0cf2c08d ; https://news.ycombinator.com/item?id=231168
+- Design caution: combining gravity + log dampening double-decays and flushes items off the page too fast. — https://herman.bearblog.dev/a-better-ranking-algorithm/
+
+### Financial-relevance classification: LLM vs keywords
+- Fine-tuned FinBERT 88% acc vs few-shot GPT-4o 86% on financial sentiment; zero-shot general LLMs lag fine-tuned domain models (ChatGPT 0-shot 63.4% vs FinBERT 71.2% on one benchmark). — https://arxiv.org/abs/2410.01987
+- Headline-topic classification: FinMA-7B-full F1 97.5% on the Headlines dataset vs GPT-4 93% — small tuned models beat frontier LLMs on this narrow task. — https://arxiv.org/pdf/2510.05151
+- Fine-tuning not automatically better on small sector datasets (zero-shot FinBERT 0.637 vs fine-tuned 0.585, n=894, p=0.45). — https://www.mdpi.com/2079-9292/14/23/4680
+- UNVERIFIED: no published head-to-head of keyword/regex rules vs LLM for *relevance* filtering specifically (literature covers sentiment/topic).
+- Cost estimate for 1000 headlines/day (arithmetic from cited prices; assumes ~250 input + 10 output tokens/headline incl. prompt → 250K in + 10K out daily):
+  - Claude Haiku 4.5 ($1 in / $5 out per MTok): ≈ $0.30/day ≈ $9/mo; Batch API ($0.50/$2.50) halves it. — https://platform.claude.com/docs/en/about-claude/pricing
+  - GPT-4o-mini ($0.15/$0.60 per MTok): ≈ $0.044/day ≈ $1.35/mo; Batch ($0.075/$0.30) ≈ $0.67/mo. — https://developers.openai.com/api/docs/pricing
+  - Batching ~50 headlines per call with one shared prompt cuts input tokens ~5–8×; either model is negligible cost at this volume. Latency: ~0.5–2s per LLM call vs microseconds for keyword rules; rules are free but brittle.
+
+### Image availability as a top-slot criterion
+- Google Top Stories/News: every article page "must contain at least one image"; the AMP-era rule required ≥1200px-wide, ≥800K-pixel images specifically for the Top Stories carousel; later relaxed (min 50K pixels; 16:9/4:3/1:1 crops recommended; AMP no longer required). So image presence/quality IS a documented eligibility factor for Google's top news surface. — https://developers.google.com/search/docs/appearance/structured-data/article ; https://searchengineland.com/google-now-wants-larger-images-amp-articles-291493 ; https://www.seoforgooglenews.com/p/optimising-images-for-google-news ; https://support.google.com/news/publisher-center/answer/9607104?hl=en
+- UNVERIFIED: any publisher (Bloomberg/NYT/Reuters) formally documenting "image required for lead homepage slot" — no public editorial policy found; only Northwestern's observation that lead-slot visual treatment varies by outlet. — https://localnewsinitiative.northwestern.edu/posts/2024/08/29/do-news-homepages-still-matter/

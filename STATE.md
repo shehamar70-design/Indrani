@@ -1,35 +1,45 @@
-# STATE — updated 2026-07-11
+# STATE — updated 2026-07-17 (evening)
 
-## Phase: 1 COMPLETE (Foundation) — exit criteria verified
+## Phase: Course-correction PLANNING COMPLETE — awaiting owner "approved"
 
-## Done (Phase 1, all 8 features per docs/superpowers/plans/2026-07-06-phase-1-foundation.md)
-1. Theme tokens + fonts + shell layout + security headers
-2. Data-layer core: safeFetch (timeout/breaker/stale), TtlCache (LRU+TTL), batcher — TDD
-3. Providers: yahoo, finnhub, binance, fred, fx (frankfurter), rss (+sanitizer)
-4. chain.ts typed fallback chains: quotes/chart/news/search/fx/calendar/fundamentals
-5. 8 API routes: /api/{quotes,chart,news,search,movers,fx,calendar,fundamentals} — Zod + rate limit + meta{source,fetchedAt,stale} + CDN cache headers
-6. Neon+Drizzle schema, Better Auth server/client, /api/auth/[...all], 5/15min auth rate limit
-7. Auth pages: /login, /register, /verify (no SMTP — dev logs verification link; login allowed with "verify email" banner)
-8. i18n scaffold: messages/{en,hi}.json, lib/i18n.ts (t(), LOCALE_COOKIE), lib/format.ts (price/percent/compact incl. lakh/crore)
+## What exists now
+- **`docs/44_COURSE_CORRECTION_PLAN.md` v2 (2026-07-17) is the deliverable**: bug fixes, homepage redesign,
+  news curation + freshness, language architecture (global HI/EN toggle + MT + TTS), quotes latency
+  (Upstash Redis + WS worker per docs/43 §12d), tooling map, build order (Phases 0–6), 24 consolidated
+  open questions (§8), success metrics, evidence appendix.
+- Plan was triple-reviewed (3 parallel reviewer agents: merge fidelity, goal coverage, internal consistency).
+  Goal coverage: 16/16 requirements COVERED. All found issues fixed same day:
+  - BLOCKER fixed: `news:latest` Redis key removed — news storage is Neon Postgres ONLY (Redis = quotes/charts only).
+  - Exec-summary "sub-50ms" corrected to the doc's real targets (p50 ≤80ms MISS+Redis-HIT, ≤60ms CDN HIT, projections).
+  - Freshness claim now carries the poll-cadence contingency (OQ #12).
+  - §2.J media module rewritten to the split Watch/Listen pattern (matches 07-17 live Bloomberg audit).
+  - Global toggle placement fixed to §A Utility Bar; §8 renumbered (24 items, incl. edge-runtime + Logo.dev);
+    NSE/BSE OQ restored to original dual question; /hindi interim behavior defined; evidence paths clarified (~/).
+- ~25 file:line claims in the plan re-verified against tree with 0 mismatches (reviewer pass).
 
-## Exit criteria verified 2026-07-11
-- /api/quotes?symbols=AAPL,^NSEI,BTC-USD → 200 live (AAPL 315.32 yahoo, isStale:false)
-- sign-up → 200 token; sign-in → 200 + session cookie (Origin header required — CSRF check active)
-- vitest 56/56 (8 files), tsc clean, eslint clean
-- docs/19 critical tests: 1-4, 7, 8 covered; 5 (command parser) → Phase 3; 6 (watchlist API) → Phase 4
+## Key verified facts (do not re-derive)
+- Build broken: sole tsc error = missing `lib/article-paths.ts` (only importer `components/news/article/related-rail.tsx:8`).
+- Chart-tab bug root cause: TZ-unpinned toLocale* in `components/markets/range-chart.tsx:29-36` → hydration
+  mismatch on prod (works in same-TZ dev). Movers: unsorted/unfiltered in `lib/data/providers/yahoo.ts:167-188`.
+- CTA-less module = NewsletterBand (`components/news/newsletter-band.tsx`), 0 links/buttons/inputs.
+- 11 nav routes + /search 404 (no `[vertical]` route). Homepage = sparse text lists, 2 images total.
+- Latency (local dev 07-17): warm p50 14.6ms; expired-burst 207–363ms. Prod unmeasurable (SSO 302) until
+  Protection Bypass enabled (Phase 0.3).
+- Evidence: `~/pw-audit/out/` (screenshots + v17-findings.txt), `~/scratchpad/plan-sections/` (6 drafts),
+  `docs/research/bloomberg-2026-07/` (live Bloomberg audit, TinyFish run 74c44be0).
 
 ## In progress
-- nothing — Phase 1 closed
+- Nothing. NO implementation code written (user directive: wait for "approved").
 
-## Next
-- Phase 2 per docs/36 roadmap: read roadmap + relevant docs/NN, plan mode → approval → execute
-- User guidance: full feature freedom, MORE features fine never fewer; premium chart-rich within docs/17 budget; missing/extra features web-searched at end after core
+## Next (on owner approval)
+- Phase 0 (stabilization): create `lib/article-paths.ts` → green build → deploy → enable bypass secret →
+  prod BEFORE latency battery. Then Phases 1–6 per docs/44 §7. Owner must also answer docs/44 §8 (24 OQs);
+  minimum blocking set: #1–2 (translation accounts), #4–5 (Upstash/VM cost), #7 (bypass), #12 (poll cadence).
 
 ## Known issues
-- No git remote configured — pushes need one
-- github + memory MCP servers from docs/20 not installed
-- Rate limiter is per-lambda-instance in-memory (fine for dev; note for Vercel scale)
+- Working tree has uncommitted prior work (article components, schema.ts, package.json) on branch `phase-2-news`.
+- No git remote configured — pushes need one.
 
 ## Commands to resume
 pnpm dev  # http://localhost:3000 (needs .env.local: DATABASE_URL, BETTER_AUTH_SECRET, FINNHUB_API_KEY, FRED_API_KEY)
-pnpm exec vitest run && pnpm exec tsc --noEmit
+pnpm exec vitest run && pnpm exec tsc --noEmit  # tsc currently fails: missing lib/article-paths.ts (known, Phase 0)
