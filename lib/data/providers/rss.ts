@@ -53,13 +53,55 @@ export function yahooTickerFeed(symbol: string): FeedConfig {
   };
 }
 
-/** Strip everything executable/embedded; keep readable plain text only. */
+const NAMED_ENTITIES: Record<string, string> = {
+  amp: "&",
+  lt: "<",
+  gt: ">",
+  quot: '"',
+  apos: "'",
+  nbsp: " ",
+  mdash: "—",
+  ndash: "–",
+  hellip: "…",
+  lsquo: "‘",
+  rsquo: "’",
+  ldquo: "“",
+  rdquo: "”",
+  copy: "©",
+  reg: "®",
+  trade: "™",
+};
+
+/**
+ * Decode HTML entities exactly once (docs/44 §1.7). Feeds double-encode and
+ * sanitize-html re-encodes its output, so without this summaries render
+ * literal "&amp;". Single-pass by design: never loops, so intentional
+ * entity-looking text survives one level deep.
+ */
+export function decodeEntities(s: string): string {
+  return s.replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g, (match, body: string) => {
+    if (body[0] === "#") {
+      const code =
+        body[1] === "x" || body[1] === "X"
+          ? Number.parseInt(body.slice(2), 16)
+          : Number.parseInt(body.slice(1), 10);
+      return Number.isNaN(code) || code < 0 || code > 0x10ffff
+        ? match
+        : String.fromCodePoint(code);
+    }
+    return NAMED_ENTITIES[body.toLowerCase()] ?? match;
+  });
+}
+
+/** Strip everything executable/embedded; keep readable, entity-decoded plain text only. */
 export function sanitizeSummary(html: string): string {
-  return sanitizeHtml(html, {
-    allowedTags: [],
-    allowedAttributes: {},
-    disallowedTagsMode: "discard",
-  })
+  return decodeEntities(
+    sanitizeHtml(html, {
+      allowedTags: [],
+      allowedAttributes: {},
+      disallowedTagsMode: "discard",
+    }),
+  )
     .replace(/\s+/g, " ")
     .trim();
 }
