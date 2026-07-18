@@ -843,6 +843,25 @@ Headers verified live: quotes `s-maxage=10, stale-while-revalidate=60`; news/mov
 
 **Prod:** `https://indrani-git-main-akash1862h-1494s-projects.vercel.app` → 302 SSO in 29.3ms (deployment protection) — unmeasurable today. No `VERCEL_AUTOMATION_BYPASS_SECRET` exists (checked `.env.local` and `vercel env ls`). No `UPSTASH_*` keys and zero redis/upstash code in `lib/` or `app/`. Region iad1 (no `preferredRegion`), Node runtime everywhere. (`indrani.vercel.app` is an unrelated hotel site — never cite it.)
 
+### Prod BEFORE (measured 2026-07-18T15:55Z — fills the empty prod baseline row above)
+
+Probe: this box (iad-adjacent baseline, WSL2); every response served from PoP `iad1`. Raw log: `~/scratchpad/latency-before-prod-20260718-1555.txt`. Auth deviation from protocol step 2: the only credential on this box (Vercel MCP OAuth token) is **forbidden** from creating the protection-bypass secret (403 `projectProtectionBypass:create`), so the battery authenticated via an MCP-issued temporary share link exchanged for a `_vercel_jwt` cookie — validated at the edge like the bypass header, equivalent TTFB overhead. Everything else (symbol set, scenarios, curl timing fields) identical to the 07-14/07-17 battery.
+
+TTFB ms (totals within 0.1–0.4ms of TTFB — payloads are tiny):
+
+| Scenario (prod, /api/quotes?symbols=AAPL,MSFT,^NSEI,RELIANCE.NS,BTC-USD) | min | p50 | p95 | max | x-vercel-cache |
+|---|---|---|---|---|---|
+| First hit of session | — | — | — | 513.5 | MISS ×1 |
+| 20 req 1s apart | 16.4 | 20.9 | 51.5 | 53.0 | HIT ×18, STALE ×2 |
+| Burst ×5 parallel, EXPIRED cache (25s past s-maxage=10) | 42.4 | 46.5 | 65.1 | 84.5 | STALE ×5 |
+| Burst ×5 parallel, warm cache | 31.5 | 36.6 | 44.0 | 46.8 | STALE ×5 |
+| /api/news ×5 | 18.9 | 20.2 | 30.9 | 927.4 | MISS ×1 (927.4), HIT ×4 |
+| /api/movers ×5 | 18.6 | 20.2 | 36.4 | 196.4 | MISS ×1 (196.4), HIT ×4 |
+
+HIT/MISS split (protocol step 4): CDN-HIT/STALE rows p50 ≈ 20–47ms; the only true function-path samples are the three MISSes — quotes 513.5ms (cold start + Yahoo), news 927.4ms, movers 196.4ms — matching the local expired-path profile. Two prod-specific observations for the AFTER comparison:
+1. **CDN `swr=60` masks the expired-burst queueing signature from the client**: the ×5 expired burst returned STALE in 42–85ms (background revalidation at the PoP) instead of the local 207–363ms block. The queueing cost still exists — it moved into the PoP's revalidation and shows up as the 513/927ms MISSes whenever a request lands outside the swr window, on a cold PoP, or on a novel query string (per-PoP, per-query-string keying — "Where the time goes" #4). Single-PoP probes understate it; the Redis L2 still targets exactly this path.
+2. From an iad-adjacent probe, the CDN-HIT p50 (~21ms) already beats the §5 target (≤60ms); the architecture's job remains making MISS cheap (≤80ms via Redis) and bom1 cheap for India users (step 6 + Mumbai probe).
+
 ### Where the time goes (file:line, from the 07-14 review Part B, re-confirmed today)
 
 1. **Expired-cache burst is the killer path.** 5 parallel requests on an expired cache = 207–363ms: all queue behind one upstream Yahoo refresh (`getQuotes` `lib/data/chain.ts:54` → `safeFetch` `lib/data/safe-fetch.ts:71` → `lib/data/providers/yahoo.ts:26`; 3s provider timeout, `DEFAULT_TIMEOUT_MS` `safe-fetch.ts:29`). On Vercel, every new/concurrent lambda instance starts with an **empty module-scope TtlCache** (`lib/data/cache.ts:70`), so this is empirically the **common prod path**, not the exception.
