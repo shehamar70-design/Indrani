@@ -63,15 +63,15 @@
   --color-cyan: var(--cyan, #4dd0e1);
   --color-grid-line: var(--grid-line, var(--border));
   --radius: var(--radius);
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-newsreader), ui-serif, Georgia, serif;
+  --font-sans: var(--font-inter), var(--font-devanagari), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-newsreader), var(--font-devanagari), ui-serif, Georgia, serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-inter), var(--font-devanagari), ui-sans-serif, system-ui, sans-serif;
 }
 
 .terminal-dark {
