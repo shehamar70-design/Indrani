@@ -164,6 +164,25 @@ const SCREENER_IDS = {
 
 export type MoverKind = keyof typeof SCREENER_IDS;
 
+/**
+ * Enforce direction + ordering in the provider (single choke point,
+ * docs/44 §1.2): gainers must be strictly positive sorted desc, losers
+ * strictly negative sorted asc. Yahoo's screener ordering is untrustworthy
+ * and has shipped wrong-sign rows — drop nonconforming rows, never re-sign.
+ * Actives is a volume list where mixed signs are valid; passed through.
+ */
+export function enforceMoverOrder(kind: MoverKind, quotes: Quote[]): Quote[] {
+  if (kind === "gainers")
+    return quotes
+      .filter((quote) => quote.changePercent > 0)
+      .sort((a, b) => b.changePercent - a.changePercent);
+  if (kind === "losers")
+    return quotes
+      .filter((quote) => quote.changePercent < 0)
+      .sort((a, b) => a.changePercent - b.changePercent);
+  return quotes;
+}
+
 export async function yahooMovers(kind: MoverKind, count = 25): Promise<Quote[]> {
   const result = await yf.screener({ scrIds: SCREENER_IDS[kind], count });
   const out: Quote[] = [];
@@ -184,5 +203,5 @@ export async function yahooMovers(kind: MoverKind, count = 25): Promise<Quote[]>
       meta: now(),
     });
   }
-  return out;
+  return enforceMoverOrder(kind, out);
 }
