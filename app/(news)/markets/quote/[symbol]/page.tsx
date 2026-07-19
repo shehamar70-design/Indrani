@@ -5,15 +5,14 @@
  */
 
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import { getQuotes, getChart, getFundamentals, getNews } from "@/lib/data/chain";
+import { getQuotes, getChart } from "@/lib/data/chain";
 import { findSymbol, relatedSymbols } from "@/lib/symbols";
 import { formatPrice, formatPercentPoints } from "@/lib/format";
 import QuoteHeader from "@/components/markets/quote-header";
 import RangeChart from "@/components/markets/range-chart";
-import StatsGrid from "@/components/markets/stats-grid";
-import ExternalCard from "@/components/news/external-card";
+import { StatsSection, NewsSection, RelatedSection } from "@/components/markets/quote-sections";
 
 export const revalidate = 60;
 
@@ -55,20 +54,16 @@ export default async function QuotePage({ params }: Props) {
   const wantsFundamentals = !type || type === "EQUITY" || type === "ETF";
   const related = relatedSymbols(symbol);
 
-  const [quotesRes, chartRes, fundRes, newsRes, relatedRes] = await Promise.all([
+  // Only the header + chart block the first paint (docs/44 §1.8); the rest
+  // streams behind Suspense so a slow fallback chain can't freeze the page.
+  const [quotesRes, chartRes] = await Promise.all([
     getQuotes([symbol]),
     getChart(symbol, "1d", "5m"),
-    wantsFundamentals ? getFundamentals(symbol) : Promise.resolve(null),
-    getNews({ symbol, limit: 6 }),
-    related.length ? getQuotes(related.map((r) => r.symbol)) : Promise.resolve(null),
   ]);
 
   const quote = quotesRes.data?.[symbol];
   // Symbol neither in our directory nor known to any provider → 404.
   if (!quote && !entry) notFound();
-
-  const news = newsRes.data ?? [];
-  const relatedQuotes = relatedRes?.data ?? {};
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -105,58 +100,27 @@ export default async function QuotePage({ params }: Props) {
       <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_320px]">
         <div className="min-w-0 space-y-10">
           <RangeChart symbol={symbol} initial={chartRes.data} />
-          {quote && <StatsGrid quote={quote} fundamentals={fundRes?.data ?? null} />}
+          {quote && (
+            <Suspense fallback={<div className="h-40 animate-pulse rounded bg-muted/40" aria-label="Loading key statistics" />}>
+              <StatsSection quote={quote} wantsFundamentals={wantsFundamentals} />
+            </Suspense>
+          )}
         </div>
 
         <aside className="space-y-10">
           <section aria-label={`${symbol} news`}>
             <h2 className="mb-3 text-sm font-bold uppercase tracking-wide">Latest news</h2>
-            {news.length ? (
-              <div className="space-y-4">
-                {news.map((item) => (
-                  <ExternalCard key={item.id} item={item} variant="compact" />
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">No recent headlines for {symbol}.</p>
-            )}
+            <Suspense fallback={<div className="h-40 animate-pulse rounded bg-muted/40" aria-label="Loading news" />}>
+              <NewsSection symbol={symbol} />
+            </Suspense>
           </section>
 
           {related.length > 0 && (
             <section aria-label="Related symbols">
               <h2 className="mb-3 text-sm font-bold uppercase tracking-wide">Related</h2>
-              <ul className="divide-y divide-border">
-                {related.map((r) => {
-                  const rq = relatedQuotes[r.symbol];
-                  const up = rq ? rq.changePercent >= 0 : true;
-                  return (
-                    <li key={r.symbol}>
-                      <Link
-                        href={`/markets/quote/${encodeURIComponent(r.symbol)}`}
-                        className="flex items-baseline justify-between gap-3 py-2 hover:bg-muted/50"
-                      >
-                        <span className="min-w-0">
-                          <span className="block text-sm font-semibold">{r.symbol}</span>
-                          <span className="block truncate text-xs text-muted-foreground">{r.name}</span>
-                        </span>
-                        {rq ? (
-                          <span className="shrink-0 text-right tabular-nums">
-                            <span className="block text-sm font-semibold">{formatPrice(rq.price)}</span>
-                            <span
-                              className="block text-xs font-semibold"
-                              style={{ color: up ? "var(--accent-up)" : "var(--accent-down)" }}
-                            >
-                              {formatPercentPoints(rq.changePercent)}
-                            </span>
-                          </span>
-                        ) : (
-                          <span className="shrink-0 text-sm text-muted-foreground">—</span>
-                        )}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
+              <Suspense fallback={<div className="h-32 animate-pulse rounded bg-muted/40" aria-label="Loading related symbols" />}>
+                <RelatedSection symbol={symbol} />
+              </Suspense>
             </section>
           )}
         </aside>
