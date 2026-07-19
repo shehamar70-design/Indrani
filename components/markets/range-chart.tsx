@@ -9,7 +9,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { ChartData } from "@/lib/data/types";
-import { formatPrice, timeAgo } from "@/lib/format";
+import { symbolTimeZone, tickLabel } from "@/lib/chart-ticks";
+import { formatPrice } from "@/lib/format";
+import TimeAgo from "@/components/markets/time-ago";
 
 const RANGES: { label: string; range: string; interval: string }[] = [
   { label: "1D", range: "1d", interval: "5m" },
@@ -26,20 +28,12 @@ const W = 720;
 const H = 260;
 const PAD = { top: 12, right: 56, bottom: 22, left: 8 };
 
-function tickLabel(time: number, range: string): string {
-  const d = new Date(time * 1000);
-  if (range === "1d" || range === "5d")
-    return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-  if (range === "5y" || range === "max")
-    return d.toLocaleDateString("en-US", { year: "numeric", month: "short" });
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
-
 export default function RangeChart({ symbol, initial }: { symbol: string; initial: ChartData | null }) {
   const [active, setActive] = useState("1d");
   const [byRange, setByRange] = useState<Record<string, ChartData | null>>({ "1d": initial });
   const [loading, setLoading] = useState(false);
   const fetched = useRef(new Set(["1d"]));
+  const tz = symbolTimeZone(symbol);
 
   useEffect(() => {
     if (fetched.current.has(active)) return;
@@ -109,15 +103,15 @@ export default function RangeChart({ symbol, initial }: { symbol: string; initia
           <path d={area} fill={`url(#${gid})`} />
           <path d={line} fill="none" stroke={color} strokeWidth="1.75" />
           <text x={PAD.left} y={H - 6} fontSize="11" fill="var(--muted-foreground)">
-            {tickLabel(candles[0].time, active)}
+            {tickLabel(candles[0].time, active, tz)}
           </text>
           <text x={W - PAD.right} y={H - 6} fontSize="11" fill="var(--muted-foreground)" textAnchor="end">
-            {tickLabel(candles[candles.length - 1].time, active)}
+            {tickLabel(candles[candles.length - 1].time, active, tz)}
           </text>
         </svg>
         {chart.meta.isStale && (
           <p className="mt-1 text-[11px] uppercase text-[var(--accent-down)]">
-            Delayed — as of {timeAgo(chart.meta.fetchedAt)}
+            Delayed — as of <TimeAgo iso={chart.meta.fetchedAt} />
           </p>
         )}
       </div>

@@ -8,7 +8,8 @@
 
 import type { Quote } from "@/lib/data/types";
 import { useQuotes } from "@/lib/quote-poller";
-import { formatPrice, formatPercentPoints, timeAgo } from "@/lib/format";
+import { formatPrice, formatPercentPoints } from "@/lib/format";
+import TimeAgo from "@/components/markets/time-ago";
 
 export default function LivePrice({ initial }: { initial: Quote }) {
   const { quotes, meta } = useQuotes([initial.symbol]);
@@ -37,10 +38,10 @@ export default function LivePrice({ initial }: { initial: Quote }) {
         {state === "CLOSED" && "Market closed · "}
         {quote.meta.isStale ? (
           <span className="uppercase text-[var(--accent-down)]">
-            Delayed — as of {timeAgo(meta?.fetchedAt ?? quote.meta.fetchedAt)}
+            Delayed — as of <TimeAgo iso={meta?.fetchedAt ?? quote.meta.fetchedAt} />
           </span>
         ) : (
-          <>Updated {timeAgo(meta?.fetchedAt ?? quote.meta.fetchedAt)}</>
+          <>Updated <TimeAgo iso={meta?.fetchedAt ?? quote.meta.fetchedAt} /></>
         )}
       </p>
     </div>
